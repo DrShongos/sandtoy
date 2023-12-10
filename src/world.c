@@ -1,5 +1,6 @@
 #include "world.h"
 #include "raylib.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -79,6 +80,15 @@ void updateWorld(World_t *world)
         }
     }
 
+}
+
+void replaceBlock(World_t* world, uint32_t x, uint32_t y, Block_t newBlock)
+{
+    Block_t* block = getBlockAt(world, x, y);
+    if (block == NULL)
+        return;
+
+    *block = newBlock;
 }
 
 void swapBlocks(Block_t *block, Block_t *other)

@@ -22,6 +22,7 @@ Block_t* getBlockAt(World_t* world, uint32_t x, uint32_t y);
 
 void updateWorld(World_t* world);
 
+void replaceBlock(World_t* world, uint32_t x, uint32_t y, Block_t newBlock);
 void swapBlocks(Block_t* block, Block_t* other);
 
 void drawBlockAt(World_t* world, uint32_t x, uint32_t y);

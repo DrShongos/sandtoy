@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <raylib.h>
 #include "world.h"
+#include "user.h"
 
 #define WIDTH 800
 #define HEIGHT 800
 
-#define TICKRATE 5
+#define TICKRATE 3
 
 int main()
 {
@@ -26,12 +27,17 @@ int main()
     *getBlockAt(&world, 0, 6) = BLOCK_SAND;
     *getBlockAt(&world, 0, 5) = BLOCK_SAND;
 
-    int ticks = 1;
+    int ticks = 0;
 
     while(!WindowShouldClose()) {
         if (ticks % TICKRATE == 0) {
             updateWorld(&world);
-            ticks = 1;
+            ticks = 0;
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            WorldPosition_t pos = getClickWorldPosition();            
+            replaceBlock(&world, pos.x, pos.y, BLOCK_SAND);
         }
 
         BeginDrawing();
