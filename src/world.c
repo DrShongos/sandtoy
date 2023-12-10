@@ -41,6 +41,11 @@ Block_t* getBlockAt(World_t *world, uint32_t x, uint32_t y)
     return &world->blocks[y][x];
 }
 
+static bool isBlockEmpty(Block_t* block) 
+{
+    return (block != NULL && *block == BLOCK_AIR);
+}
+
 void updateWorld(World_t *world)
 {
     for (int y = world->height - 1; y >= 0; y--) {
@@ -51,25 +56,26 @@ void updateWorld(World_t *world)
             switch (*block) {
                 case BLOCK_SAND: {
                     Block_t* bottom = getBlockAt(world, x, y + 1);
+                    Block_t* left = getBlockAt(world, x - 1, y);
+                    Block_t* right = getBlockAt(world, x + 1, y);
                     Block_t* bottomLeft = getBlockAt(world, x - 1, y + 1);
                     Block_t* bottomRight = getBlockAt(world, x + 1, y + 1);
 
-                    if (bottom != NULL && *bottom == BLOCK_AIR) { 
+                    if (isBlockEmpty(bottom)) { 
                         swapBlocks(block, bottom);
                         break;
                     }
 
-                    if (bottomLeft != NULL)
-                        if (*bottomLeft == BLOCK_AIR) {
-                            swapBlocks(block, bottomLeft);
-                            break;
-                        }
+                    // Block sides are checked on the same y to prevent leaking through diagonal lines
+                    if (isBlockEmpty(left) && isBlockEmpty(bottomLeft)) {
+                        swapBlocks(block, bottomLeft);
+                        break;
+                    }
 
-                    if (bottomRight != NULL)
-                        if (*bottomRight == BLOCK_AIR) {
-                            swapBlocks(block, bottomRight);
-                            break;
-                        }
+                    if (isBlockEmpty(right) && isBlockEmpty(bottomRight)) {
+                        swapBlocks(block, bottomRight);
+                        break;
+                    }
 
                     break;
 
@@ -104,6 +110,8 @@ static Color getBlockColor(Block_t block)
     switch (block) {
         case BLOCK_SAND:
             return YELLOW;
+        case BLOCK_WOOD:
+            return BROWN;
         default:
             return BLACK; // Unreachable; World drawing function skips air blocks
     }

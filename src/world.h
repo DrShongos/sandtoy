@@ -8,6 +8,7 @@
 typedef enum {
     BLOCK_AIR,
     BLOCK_SAND,
+    BLOCK_WOOD,
 } Block_t;
 
 typedef struct {
