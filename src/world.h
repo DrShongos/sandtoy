@@ -1,15 +1,8 @@
-#ifndef BLOCK_H
-#define BLOCK_H
+#ifndef WORLD_H
+#define WORLD_H
 
+#include "block.h"
 #include <stdint.h>
-
-#define BLOCK_SIZE 8.0f
-
-typedef enum {
-    BLOCK_AIR,
-    BLOCK_SAND,
-    BLOCK_WOOD,
-} Block_t;
 
 typedef struct {
     Block_t** blocks;

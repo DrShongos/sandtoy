@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <raylib.h>
+#include "block.h"
 #include "world.h"
 #include "user.h"
 
@@ -17,7 +18,7 @@ int main()
     World_t world = createWorld(100, 100);
 
     User_t user;
-    user.currentBlock = BLOCK_SAND;
+    user.currentBlock = sandBlock();
 
     int ticks = 0;
 
