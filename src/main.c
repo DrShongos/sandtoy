@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <raylib.h>
+#include <stdlib.h>
+#include <time.h>
 #include "block.h"
 #include "world.h"
 #include "user.h"
@@ -7,7 +9,7 @@
 #define WIDTH 800
 #define HEIGHT 800
 
-#define TICKRATE 3
+#define TICKRATE 2
 
 int main()
 {
@@ -21,6 +23,8 @@ int main()
     user.currentBlock = sandBlock();
 
     int ticks = 0;
+
+    srand(time(NULL));
 
     while(!WindowShouldClose()) {
         if (ticks % TICKRATE == 0) {

@@ -27,6 +27,7 @@ typedef union {
 typedef struct {
     BlockType_t type;
     BlockData_t data;    
+    bool updatedThisFrame;
 } Block_t;
 
 Block_t airBlock();

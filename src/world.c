@@ -51,10 +51,19 @@ static bool isBlockEmpty(Block_t* block)
     if (block == NULL)
         return false;
 
+    // TODO: This should probably be split into two separate functions in the future
     return (block->type == BLOCK_AIR);
 }
 
-static bool powder(World_t* world, Block_t* block, uint32_t x, uint32_t y)
+static bool isBlockPassable(Block_t* block)
+{
+    if (block == NULL)
+        return false;
+
+    return (isBlockEmpty(block) || block->type == BLOCK_WATER);
+}
+
+static void powder(World_t* world, Block_t* block, uint32_t x, uint32_t y)
 {
     Block_t* bottom = getBlockAt(world, x, y + 1);
     Block_t* left = getBlockAt(world, x - 1, y);
@@ -62,57 +71,53 @@ static bool powder(World_t* world, Block_t* block, uint32_t x, uint32_t y)
     Block_t* bottomLeft = getBlockAt(world, x - 1, y + 1);
     Block_t* bottomRight = getBlockAt(world, x + 1, y + 1);
 
-    if (isBlockEmpty(bottom)) { 
+    if (isBlockPassable(bottom)) { 
         swapBlocks(block, bottom);
-        return true;
+        return;
     }
 
     // TODO: If both sides are available, choose one of them randomly.
     // Block sides are checked on the same y to prevent leaking through diagonal lines
-    if (isBlockEmpty(left) && isBlockEmpty(bottomLeft)) {
+    if (isBlockPassable(left) && isBlockPassable(bottomLeft)) {
         swapBlocks(block, bottomLeft);
-        return true;
+        return;
     }
 
-    if (isBlockEmpty(right) && isBlockEmpty(bottomRight)) {
+    if (isBlockPassable(right) && isBlockPassable(bottomRight)) {
         swapBlocks(block, bottomRight);
-        return true;
+        return;
     }
 
-    return false;
+    return;
 }
 
-static bool liquid(World_t* world, Block_t* block, uint32_t x, uint32_t y)
+static void liquid(World_t* world, Block_t* block, uint32_t x, uint32_t y)
 {
-    if (powder(world, block, x, y))
-        return true;
+    Block_t* bottom = getBlockAt(world, x, y + 1);
+    Block_t* left = getBlockAt(world, x - 1, y);
+    Block_t* right = getBlockAt(world, x + 1, y);
+    Block_t* bottomLeft = getBlockAt(world, x - 1, y + 1);
+    Block_t* bottomRight = getBlockAt(world, x + 1, y + 1);
 
-    if (block->data.water.direction == -1) {
-        Block_t* left = getBlockAt(world, x - 1, y);   
-        if (isBlockEmpty(left)) {
-            swapBlocks(block, left);
-            return true;
-        }
+    if (isBlockEmpty(bottom)) 
+       swapBlocks(block, bottom);        
 
-        TraceLog(LOG_INFO, "Cant go left, turning right");
-
-        block->data.water.direction = 1;
-        return false;
+    // TODO: If both sides are available, choose one of them randomly.
+    // Block sides are checked on the same y to prevent leaking through diagonal lines 
+    if (isBlockEmpty(left) && isBlockEmpty(right)) {
+        int random = rand() % 2;
+        
+        if (random == 0)              
+            swapBlocks(block, left); 
+        else   
+            swapBlocks(block, right);  
     }
 
-    if (block->data.water.direction == 1) {
-        Block_t* right = getBlockAt(world, x + 1, y); 
-        if (isBlockEmpty(right)) {            
-            swapBlocks(block, right);
-            return true;
-        }
-        TraceLog(LOG_INFO, "Cant go right, turning left");
+    if (isBlockEmpty(left))
+        swapBlocks(block, left);              
 
-        block->data.water.direction = -1;
-        return false;
-    }
-
-    return false;
+    if (isBlockEmpty(right)) 
+        swapBlocks(block, right);         
 }
 
 void updateWorld(World_t *world)
@@ -121,6 +126,9 @@ void updateWorld(World_t *world)
         for (int x = 0; x < world->width; x++) {
             
             Block_t* block = getBlockAt(world, x, y);
+
+            if (block->updatedThisFrame)
+                continue;
            
             switch (block->type) {
                 case BLOCK_SAND: 
@@ -135,6 +143,14 @@ void updateWorld(World_t *world)
         }            
     }
 
+    // Clean up all the blocks that were updated 
+    for (int y = world->height - 1; y >= 0; y--) {
+        for (int x = 0; x < world->width; x++) {
+            Block_t* block = getBlockAt(world, x, y);
+
+            block->updatedThisFrame = false;
+        }
+    }
 }
 
 void replaceBlock(World_t* world, uint32_t x, uint32_t y, Block_t newBlock)
@@ -144,6 +160,7 @@ void replaceBlock(World_t* world, uint32_t x, uint32_t y, Block_t newBlock)
         return;
 
     *block = newBlock;
+    block->updatedThisFrame = true;
 }
 
 void swapBlocks(Block_t *block, Block_t *other)
@@ -151,6 +168,7 @@ void swapBlocks(Block_t *block, Block_t *other)
     Block_t tmp = *block;
     *block = *other;
     *other = tmp;
+    other->updatedThisFrame = true;    
 }
 
 static Color getBlockColor(BlockType_t block)
