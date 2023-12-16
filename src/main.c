@@ -21,6 +21,7 @@ int main()
 
     User_t user;
     user.currentBlock = sandBlock();
+    user.placementRadius = 1;
 
     int ticks = 0;
 

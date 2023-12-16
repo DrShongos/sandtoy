@@ -46,7 +46,7 @@ Block_t* getBlockAt(World_t *world, uint32_t x, uint32_t y)
     return &world->blocks[y][x];
 }
 
-static bool isBlockEmpty(Block_t* block) 
+bool isBlockEmpty(Block_t* block) 
 {
     if (block == NULL)
         return false;
