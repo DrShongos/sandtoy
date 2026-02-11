@@ -87,8 +87,6 @@ static void powder(World_t* world, Block_t* block, uint32_t x, uint32_t y)
         swapBlocks(block, bottomRight);
         return;
     }
-
-    return;
 }
 
 static void liquid(World_t* world, Block_t* block, uint32_t x, uint32_t y)
@@ -99,25 +97,53 @@ static void liquid(World_t* world, Block_t* block, uint32_t x, uint32_t y)
     Block_t* bottomLeft = getBlockAt(world, x - 1, y + 1);
     Block_t* bottomRight = getBlockAt(world, x + 1, y + 1);
 
-    if (isBlockEmpty(bottom)) 
-       swapBlocks(block, bottom);        
+
+    // TODO: If both sides are available, choose one of them randomly.
+    // Block sides are checked on the same y to prevent leaking through diagonal lines
+    if ((isBlockEmpty(bottomLeft) && isBlockEmpty(left)) && (isBlockEmpty(bottomRight) && isBlockEmpty(right))) {
+        const int random = rand() % 2;
+
+        if (random == 0)
+            swapBlocks(block, bottomLeft);
+        else
+            swapBlocks(block, bottomRight);
+
+        return;
+    }
+
+    if (isBlockEmpty(bottomLeft) && isBlockEmpty(left)) {
+        swapBlocks(block, bottomLeft);
+        return;
+    }
+
+    if (isBlockEmpty(bottomRight) && isBlockEmpty(right)) {
+        swapBlocks(block, bottomRight);
+        return;
+    }
 
     // TODO: If both sides are available, choose one of them randomly.
     // Block sides are checked on the same y to prevent leaking through diagonal lines 
     if (isBlockEmpty(left) && isBlockEmpty(right)) {
-        int random = rand() % 2;
+        const int random = rand() % 2;
         
         if (random == 0)              
             swapBlocks(block, left); 
         else   
-            swapBlocks(block, right);  
+            swapBlocks(block, right);
+    }
+
+
+    if (isBlockEmpty(bottom)) {
+        swapBlocks(block, bottom);
+        return;
     }
 
     if (isBlockEmpty(left))
-        swapBlocks(block, left);              
+        swapBlocks(block, left);
 
-    if (isBlockEmpty(right)) 
-        swapBlocks(block, right);         
+    if (isBlockEmpty(right))
+        swapBlocks(block, right);
+
 }
 
 void updateWorld(World_t *world)
@@ -165,7 +191,7 @@ void replaceBlock(World_t* world, uint32_t x, uint32_t y, Block_t newBlock)
 
 void swapBlocks(Block_t *block, Block_t *other)
 {
-    Block_t tmp = *block;
+    const Block_t tmp = *block;
     *block = *other;
     *other = tmp;
     other->updatedThisFrame = true;    
@@ -189,12 +215,12 @@ static Color getBlockColor(BlockType_t block)
 void drawBlockAt(World_t *world, uint32_t x, uint32_t y)
 {
     // Air blocks are skipped to save time
-    Block_t* block = getBlockAt(world, x, y);
+    const Block_t* block = getBlockAt(world, x, y);
     if (block == NULL || block->type == BLOCK_AIR)
         return;
 
-    Color blockColor = getBlockColor(block->type);
-    float blockSize = BLOCK_SIZE;
+    const Color blockColor = getBlockColor(block->type);
+    const float blockSize = BLOCK_SIZE;
 
     Rectangle rectangle;
     rectangle.x = (float)x * blockSize;
